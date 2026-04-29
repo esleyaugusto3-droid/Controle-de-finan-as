@@ -1,0 +1,310 @@
+.piggySection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.piggySection__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.piggySection__hero {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 12px;
+}
+
+.piggySection__panel {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)),
+    rgba(18, 21, 28, 0.78);
+  box-shadow: 0 16px 38px -26px rgba(0, 0, 0, 0.72);
+}
+
+.piggySection__panelTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.35px;
+  color: var(--text-h);
+}
+
+.piggySection__panelText {
+  margin: 6px 0 0;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.piggySection__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.piggySection__stat {
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.piggySection__statLabel {
+  display: block;
+  font-size: 12px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.piggySection__statValue {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text-h);
+  letter-spacing: -0.5px;
+}
+
+.piggySection__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.piggySection__formActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.piggySection__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.piggySection__empty {
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.piggyCard {
+  position: relative;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    rgba(18, 21, 28, 0.82);
+  overflow: hidden;
+  box-shadow:
+    0 18px 40px -22px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.piggyCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(212, 175, 55, 0.12), transparent 36%),
+    radial-gradient(circle at top right, rgba(141, 98, 255, 0.1), transparent 30%);
+  pointer-events: none;
+}
+
+.piggyCard__header,
+.piggyCard__ringRow,
+.piggyCard__form {
+  position: relative;
+  z-index: 1;
+}
+
+.piggyCard__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.piggyCard__titleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.piggyCard__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.03);
+}
+
+.piggyCard__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: var(--text-h);
+}
+
+.piggyCard__subtitle {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.piggyCard__delete {
+  appearance: none;
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.08);
+  color: rgba(255, 210, 210, 0.98);
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.piggyCard__delete:hover {
+  border-color: rgba(239, 68, 68, 0.44);
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.piggyCard__notes {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 14px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.piggyCard__ringRow {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.piggyCard__ring {
+  width: 132px;
+  height: 132px;
+  border-radius: 999px;
+  padding: 10px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.piggyCard__ringInner {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.08), transparent 55%),
+    rgba(10, 12, 18, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+
+.piggyCard__ringInner strong {
+  font-size: 24px;
+  line-height: 1;
+  color: var(--text-h);
+}
+
+.piggyCard__ringInner span {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.piggyCard__values {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.piggyCard__values > div {
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.piggyCard__label {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.piggyCard__values strong {
+  font-size: 18px;
+  color: var(--text-h);
+  letter-spacing: -0.3px;
+}
+
+.piggyCard__bar {
+  position: relative;
+  z-index: 1;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 14px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.piggyCard__barFill {
+  height: 100%;
+  border-radius: inherit;
+}
+
+.piggyCard__form {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  margin-top: 14px;
+}
+
+@media (max-width: 900px) {
+  .piggySection__hero,
+  .piggySection__grid,
+  .piggyCard__ringRow,
+  .piggyCard__values {
+    grid-template-columns: 1fr;
+  }
+
+  .piggyCard__ring {
+    width: 100%;
+    height: 180px;
+  }
+
+  .piggyCard__form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .piggyCard__delete {
+    padding-inline: 12px;
+  }
+
+  .piggySection__stats {
+    grid-template-columns: 1fr;
+  }
+}
