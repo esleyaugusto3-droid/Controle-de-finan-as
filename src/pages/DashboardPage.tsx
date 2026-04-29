@@ -1,11 +1,13 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { Card } from '../components/ui/Card'
 import { PiggyBankCard } from '../components/piggy/PiggyBankCard'
-import { formatBrl } from '../lib/financeFormat'
-import { getTotals } from '../lib/financeCalculations'
+import { formatBrl, formatMonthYear, getCurrentMonthKey } from '../lib/financeFormat'
+import { filterTransactions, getMonthlyTotals, getTotals } from '../lib/financeCalculations'
 import { useFinanceStore } from '../state/financeStore'
 
 const piggyPalette = ['#d4af37', '#8d62ff', '#10b981', '#ef4444', '#38bdf8', '#f59e0b']
+const transactionTypeOptions = ['all', 'income', 'expense'] as const
+type TransactionTypeFilter = (typeof transactionTypeOptions)[number]
 
 const parseMoneyInput = (value: string): number | null => {
   const normalized = value.replace(',', '.').trim()
@@ -17,6 +19,20 @@ const parseMoneyInput = (value: string): number | null => {
   return Math.round(amount * 100)
 }
 
+const buildMonthOptions = (): string[] => {
+  const now = new Date()
+  const options: string[] = []
+
+  for (let offset = 0; offset < 12; offset += 1) {
+    const dt = new Date(Date.UTC(now.getFullYear(), now.getMonth() - offset, 1))
+    const yyyy = dt.getUTCFullYear()
+    const mm = String(dt.getUTCMonth() + 1).padStart(2, '0')
+    options.push(`${yyyy}-${mm}`)
+  }
+
+  return options
+}
+
 export function DashboardPage() {
   const { state, addPiggyBank, addPiggyBankContribution, withdrawPiggyBankAmount, deletePiggyBank } = useFinanceStore()
 
@@ -25,8 +41,20 @@ export function DashboardPage() {
   const [piggyInitial, setPiggyInitial] = useState('')
   const [piggyColor, setPiggyColor] = useState(piggyPalette[0])
   const [piggyNotes, setPiggyNotes] = useState('')
+  const [monthKey, setMonthKey] = useState(getCurrentMonthKey())
+  const [transactionTypeFilter, setTransactionTypeFilter] = useState<TransactionTypeFilter>('all')
 
   const totals = useMemo(() => getTotals(state), [state])
+  const monthTotals = useMemo(() => getMonthlyTotals(state, monthKey), [state, monthKey])
+  const monthOptions = useMemo(() => buildMonthOptions(), [])
+  const filteredTransactions = useMemo(
+    () =>
+      filterTransactions(state.transactions, {
+        monthKey,
+        type: transactionTypeFilter === 'all' ? undefined : transactionTypeFilter,
+      }),
+    [monthKey, state.transactions, transactionTypeFilter],
+  )
 
   const categoriesById = useMemo(() => {
     const map = new Map<string, { name: string; color: string }>()
@@ -34,7 +62,7 @@ export function DashboardPage() {
     return map
   }, [state.categories])
 
-  const recent = useMemo(() => state.transactions.slice(0, 8), [state.transactions])
+  const recent = useMemo(() => filteredTransactions.slice(0, 10), [filteredTransactions])
 
   const piggySummary = useMemo(() => {
     let savedCents = 0
@@ -142,6 +170,75 @@ export function DashboardPage() {
           </div>
         </Card>
       </div>
+
+      <Card
+        title={`Resumo do mês · ${formatMonthYear(monthKey)}`}
+        right={<span style={{ fontSize: 13, color: 'var(--text)' }}>{filteredTransactions.length} movimento(s)</span>}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12 }}>
+          <div style={{ padding: 12, border: '1px solid var(--border)', borderRadius: 12, background: 'rgba(15,18,24,0.78)' }}>
+            <div style={{ fontSize: 12, color: 'var(--text)' }}>Receitas do mês</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: 'rgba(16,185,129,0.95)' }}>
+              {formatBrl(monthTotals.incomeCents)}
+            </div>
+          </div>
+          <div style={{ padding: 12, border: '1px solid var(--border)', borderRadius: 12, background: 'rgba(15,18,24,0.78)' }}>
+            <div style={{ fontSize: 12, color: 'var(--text)' }}>Despesas do mês</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: 'rgba(239,68,68,0.95)' }}>
+              {formatBrl(monthTotals.expenseCents)}
+            </div>
+          </div>
+          <div style={{ padding: 12, border: '1px solid var(--border)', borderRadius: 12, background: 'rgba(15,18,24,0.78)' }}>
+            <div style={{ fontSize: 12, color: 'var(--text)' }}>Saldo do mês</div>
+            <div
+              style={{
+                fontSize: 22,
+                fontWeight: 900,
+                color: monthTotals.balanceCents >= 0 ? 'rgba(16,185,129,0.95)' : 'rgba(239,68,68,0.95)',
+              }}
+            >
+              {formatBrl(monthTotals.balanceCents)}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 14 }}>
+          <label className="field">
+            <span className="label">Mês</span>
+            <select className="input" value={monthKey} onChange={(event) => setMonthKey(event.target.value)}>
+              {monthOptions.map((option) => (
+                <option key={option} value={option}>
+                  {formatMonthYear(option)}
+                </option>
+              ))}
+            </select>
+            <span className="help">Os resumos e filtros mudam conforme o mês selecionado.</span>
+          </label>
+
+          <div className="field">
+            <span className="label">Filtro de lançamentos</span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {transactionTypeOptions.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  className="btn"
+                  onClick={() => setTransactionTypeFilter(option)}
+                  style={{
+                    opacity: transactionTypeFilter === option ? 1 : 0.55,
+                    borderColor: transactionTypeFilter === option ? 'rgba(212,175,55,0.42)' : undefined,
+                  }}
+                >
+                  {option === 'all' ? 'Todos' : option === 'income' ? 'Receitas' : 'Despesas'}
+                </button>
+              ))}
+            </div>
+            <span className="help">
+              Mostrando {transactionTypeFilter === 'all' ? 'todos os lançamentos' : transactionTypeFilter === 'income' ? 'somente receitas' : 'somente despesas'}.
+            </span>
+          </div>
+        </div>
+      </Card>
 
       <Card
         title="Cofrinhos digitais"
@@ -302,21 +399,22 @@ export function DashboardPage() {
       </Card>
 
       <Card
-        title="Últimos lançamentos"
-        right={<span style={{ fontSize: 13, color: 'var(--text)' }}>{state.transactions.length} no total</span>}
+        title="Lançamentos filtrados"
+        right={<span style={{ fontSize: 13, color: 'var(--text)' }}>{filteredTransactions.length} no filtro</span>}
       >
         {recent.length === 0 ? (
           <div style={{ fontSize: 14, color: 'var(--text)', padding: 6 }}>
-            Você ainda não adicionou lançamentos. Vá em <b>Lançamentos</b> para começar.
+            Nenhum lançamento encontrado para o mês e filtro selecionados.
           </div>
         ) : (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {recent.map((t) => {
-              const cat = categoriesById.get(t.categoryId)
-              const isIncome = t.type === 'income'
+            {recent.map((transaction) => {
+              const category = categoriesById.get(transaction.categoryId)
+              const isIncome = transaction.type === 'income'
+
               return (
                 <li
-                  key={t.id}
+                  key={transaction.id}
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -333,7 +431,7 @@ export function DashboardPage() {
                         width: 10,
                         height: 10,
                         borderRadius: 999,
-                        background: cat?.color ?? 'rgba(170,59,255,0.6)',
+                        background: category?.color ?? 'rgba(170,59,255,0.6)',
                         flex: '0 0 auto',
                       }}
                     />
@@ -347,17 +445,17 @@ export function DashboardPage() {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {t.description}
+                        {transaction.description}
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text)', marginTop: 2 }}>
-                        {cat?.name ?? 'Categoria'} • {t.date}
+                        {category?.name ?? 'Categoria'} • {formatMonthYear(transaction.date.slice(0, 7))}
                       </div>
                     </div>
                   </div>
 
                   <div style={{ fontWeight: 900, color: isIncome ? 'rgba(16,185,129,0.95)' : 'rgba(239,68,68,0.95)', flex: '0 0 auto' }}>
                     {isIncome ? '+' : '-'}
-                    {formatBrl(t.amountCents)}
+                    {formatBrl(transaction.amountCents)}
                   </div>
                 </li>
               )

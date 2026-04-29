@@ -3,6 +3,7 @@ import type {
   AccountCycle,
   AccountStatus,
   Category,
+  CategoryBudget,
   FinanceState,
   Id,
   PiggyBank,
@@ -41,6 +42,14 @@ export const PiggyBankSchema: z.ZodType<PiggyBank> = z.object({
   goalCents: z.number().int().positive(),
   currentCents: z.number().int().min(0),
   color: z.string().min(1),
+  createdAt: z.string().datetime(),
+  notes: z.string().optional(),
+})
+
+export const CategoryBudgetSchema: z.ZodType<CategoryBudget> = z.object({
+  id: IdSchema,
+  categoryId: IdSchema,
+  monthlyLimitCents: z.number().int().positive(),
   createdAt: z.string().datetime(),
   notes: z.string().optional(),
 })
@@ -85,6 +94,7 @@ export const FinanceStateSchema: z.ZodType<FinanceState> = z.object({
   categories: z.array(CategorySchema),
   transactions: z.array(TransactionSchema),
   piggyBanks: z.array(PiggyBankSchema),
+  categoryBudgets: z.array(CategoryBudgetSchema),
   currency: z.literal('BRL'),
   version: z.literal(1),
 })

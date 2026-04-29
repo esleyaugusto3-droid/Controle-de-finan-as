@@ -46,11 +46,20 @@ export type PiggyBank = {
   notes?: string
 }
 
+export type CategoryBudget = {
+  id: Id
+  categoryId: Id
+  monthlyLimitCents: number
+  createdAt: string // ISO
+  notes?: string
+}
+
 export type FinanceState = {
   accounts: Account[]
   categories: Category[]
   transactions: Transaction[]
   piggyBanks: PiggyBank[]
+  categoryBudgets: CategoryBudget[]
   currency: 'BRL'
   version: 1
 }

@@ -12,6 +12,7 @@ const migrateLegacyAccounts = (state: unknown): unknown => {
 
   const accounts = Array.isArray(state.accounts) ? state.accounts : []
   const piggyBanks = Array.isArray(state.piggyBanks) ? state.piggyBanks : []
+  const categoryBudgets = Array.isArray(state.categoryBudgets) ? state.categoryBudgets : []
 
   return {
     ...state,
@@ -43,6 +44,7 @@ const migrateLegacyAccounts = (state: unknown): unknown => {
       return account
     }),
     piggyBanks,
+    categoryBudgets,
   }
 }
 
@@ -51,6 +53,7 @@ export const defaultFinanceState = (): FinanceState => ({
   categories: [],
   transactions: [],
   piggyBanks: [],
+  categoryBudgets: [],
   currency: 'BRL',
   version: 1,
 })
@@ -65,7 +68,14 @@ export const loadFinanceState = (): FinanceState => {
     if (direct.success) return direct.data
 
     const migrated = migrateLegacyAccounts(parsed)
-    const migratedResult = FinanceStateSchema.safeParse(migrated)
+    const migratedWithBudgets = isPlainObject(migrated)
+      ? {
+          ...migrated,
+          categoryBudgets: Array.isArray(migrated.categoryBudgets) ? migrated.categoryBudgets : [],
+        }
+      : migrated
+
+    const migratedResult = FinanceStateSchema.safeParse(migratedWithBudgets)
     if (migratedResult.success) return migratedResult.data
 
     return defaultFinanceState()

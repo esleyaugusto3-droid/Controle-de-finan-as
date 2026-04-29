@@ -6,6 +6,7 @@ import type {
   AccountCycle,
   AccountStatus,
   Category,
+  CategoryBudget,
   FinanceState,
   Id,
   PiggyBank,
@@ -47,6 +48,12 @@ type FinanceStore = {
   addPiggyBankContribution: (piggyBankId: Id, amountCents: number) => void
   withdrawPiggyBankAmount: (piggyBankId: Id, amountCents: number) => void
   deletePiggyBank: (piggyBankId: Id) => void
+  addCategoryBudget: (input: {
+    categoryId: Id
+    monthlyLimitCents: number
+    notes?: string
+  }) => void
+  deleteCategoryBudget: (categoryId: Id) => void
   importState: (next: unknown) => { ok: true } | { ok: false; reason: string }
   resetAll: () => void
 }
@@ -105,6 +112,7 @@ export const FinanceStoreProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setState((prev) => {
         const remainingCategories = prev.categories.filter((c) => c.id !== categoryId)
         const remainingTransactions = prev.transactions.filter((t) => t.categoryId !== categoryId)
+        const remainingBudgets = prev.categoryBudgets.filter((budget) => budget.categoryId !== categoryId)
         const updatedAccounts = prev.accounts.map((account) =>
           account.categoryId === categoryId ? { ...account, categoryId: undefined } : account,
         )
@@ -113,6 +121,7 @@ export const FinanceStoreProvider: React.FC<{ children: React.ReactNode }> = ({ 
           ...prev,
           categories: remainingCategories,
           transactions: remainingTransactions,
+          categoryBudgets: remainingBudgets,
           accounts: updatedAccounts,
         }
       })
@@ -291,6 +300,34 @@ export const FinanceStoreProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }))
     }
 
+    const addCategoryBudget: FinanceStore['addCategoryBudget'] = ({ categoryId, monthlyLimitCents, notes }) => {
+      if (!Number.isInteger(monthlyLimitCents) || monthlyLimitCents <= 0) return
+
+      setState((prev) => {
+        const exists = prev.categoryBudgets.find((budget) => budget.categoryId === categoryId)
+        const nextBudgets = prev.categoryBudgets.filter((budget) => budget.categoryId !== categoryId)
+        const nextBudget: CategoryBudget = {
+          id: exists?.id ?? generateId(),
+          categoryId,
+          monthlyLimitCents,
+          createdAt: exists?.createdAt ?? nowIso(),
+          notes: notes?.trim() || undefined,
+        }
+
+        return {
+          ...prev,
+          categoryBudgets: [nextBudget, ...nextBudgets],
+        }
+      })
+    }
+
+    const deleteCategoryBudget: FinanceStore['deleteCategoryBudget'] = (categoryId) => {
+      setState((prev) => ({
+        ...prev,
+        categoryBudgets: prev.categoryBudgets.filter((budget) => budget.categoryId !== categoryId),
+      }))
+    }
+
     const importState: FinanceStore['importState'] = (next) => {
       const direct = FinanceStateSchema.safeParse(next)
       if (direct.success) {
@@ -320,6 +357,7 @@ export const FinanceStoreProvider: React.FC<{ children: React.ReactNode }> = ({ 
         categories: [],
         transactions: [],
         piggyBanks: [],
+        categoryBudgets: [],
         currency: 'BRL',
         version: 1,
       })
@@ -339,6 +377,8 @@ export const FinanceStoreProvider: React.FC<{ children: React.ReactNode }> = ({ 
       addPiggyBankContribution,
       withdrawPiggyBankAmount,
       deletePiggyBank,
+      addCategoryBudget,
+      deleteCategoryBudget,
       importState,
       resetAll,
     }
