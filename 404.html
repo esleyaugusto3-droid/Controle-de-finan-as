@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Controle de Finanças</title>
-    <meta http-equiv="refresh" content="0; url=./gh-pages-tempfiles/index.html" />
     <script>
-      window.location.replace("./gh-pages-tempfiles/index.html");
+      const target = "./gh-pages-tempfiles/index.html#" + window.location.pathname.replace(/^\//, "");
+      window.location.replace(target);
     </script>
   </head>
   <body>
